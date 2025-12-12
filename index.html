@@ -6,182 +6,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-  :root {
-    --blue-main: #1d4ed8;
-    --blue-light: #dbeafe;
-    --bg: #ffffff;
-    --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      sans-serif;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    font-family: var(--font-main);
-  }
-
-  .frame-wrapper {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Кадр всегда 16:9, вписанный в экран */
-  .frame {
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-    aspect-ratio: 16 / 9;
-    width: min(100vw, 1920px);
-    height: auto;
-    max-height: min(100vh, 1080px);
-  }
-
-  .slide-layout {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 90px 120px;
-    gap: 60px;
-  }
-
-  .original-block {
-    flex: 6;
-    background: var(--blue-light);
-    border-radius: 18px;
-    padding: 56px 80px;
-    display: flex;
-    overflow: hidden;
-  }
-
-  .translation-block {
-    flex: 4;
-    padding: 0 80px;
-    display: flex;
-    overflow: hidden;
-  }
-
-  .original-lines,
-  .translation-lines {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 100%;
-    gap: 20px;
-  }
-
-  .line {
-    display: block;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    line-height: 1.12;
-    white-space: normal;
-    word-wrap: break-word;
-    width: 100%;
-  }
-
-  .original-lines .line {
-    font-size: 88px;
-    color: var(--blue-main);
-    letter-spacing: 0.04em;
-  }
-
-  .translation-lines .line {
-    font-size: 72px;
-    color: rgba(37, 99, 235, 0.8);
-  }
-
-  .line.empty::before {
-    content: "";
-  }
-
-  .word {
-    position: relative;
-    display: inline-block;
-    padding: 0 0.08em;
-    margin-right: 0.06em;
-    border-radius: 999px;
-    transition: transform 120ms ease-out, box-shadow 160ms ease-out,
-      background 160ms ease-out, color 160ms ease-out;
-  }
-
-  .word.active {
-    background: linear-gradient(120deg, #2563eb, #60a5fa);
-    color: #ffffff;
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.5);
-  }
-
-  .slide-layout.fade-in {
-    animation: fadeIn 500ms ease-out forwards;
-  }
-
-  .slide-layout.fade-out {
-    animation: fadeOut 300ms ease-in forwards;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
+    :root {
+      --blue-main: #1d4ed8;
+      --blue-light: #dbeafe;
+      --bg: #ffffff;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
+    * {
+      box-sizing: border-box;
     }
-    to {
-      opacity: 0;
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: var(--font-main);
     }
-  }
 
-  audio {
-    display: none;
-  }
+    .frame-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  /* ---- МОБИЛЬНАЯ ВЕРСИЯ ---- */
-  @media (max-width: 900px) {
+    /* Кадр всегда 16:9, вписанный в экран */
+    .frame {
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      width: min(100vw, 1920px);
+      height: auto;
+      max-height: min(100vh, 1080px);
+    }
+
     .slide-layout {
-      padding: 24px 24px;
-      gap: 24px;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 90px 120px;
+      gap: 60px;
     }
 
     .original-block {
-      padding: 20px 24px;
-      border-radius: 14px;
+      flex: 6;
+      background: var(--blue-light);
+      border-radius: 18px;
+      padding: 56px 80px;
+      display: flex;
+      overflow: hidden;
     }
 
     .translation-block {
-      padding: 0 24px 24px 24px;
+      flex: 4;
+      padding: 0 80px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .original-lines,
+    .translation-lines {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .line {
+      display: block;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      line-height: 1.12;
+      white-space: normal;
+      word-wrap: break-word;
+      width: 100%;
     }
 
     .original-lines .line {
-      font-size: 32px;     /* вместо 88px */
+      font-size: 88px;
+      color: var(--blue-main);
+      letter-spacing: 0.04em;
     }
 
     .translation-lines .line {
-      font-size: 26px;     /* вместо 72px */
+      font-size: 72px;
+      color: rgba(37, 99, 235, 0.8);
     }
-  }
-</style>
+
+    .line.empty::before {
+      content: "";
+    }
+
+    .word {
+      position: relative;
+      display: inline-block;
+      padding: 0 0.08em;
+      margin-right: 0.06em;
+      border-radius: 999px;
+      transition: transform 120ms ease-out, box-shadow 160ms ease-out,
+        background 160ms ease-out, color 160ms ease-out;
+    }
+
+    .word.active {
+      background: linear-gradient(120deg, #2563eb, #60a5fa);
+      color: #ffffff;
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.5);
+    }
+
+    .slide-layout.fade-in {
+      animation: fadeIn 500ms ease-out forwards;
+    }
+
+    .slide-layout.fade-out {
+      animation: fadeOut 300ms ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    audio {
+      display: none;
+    }
+
+    /* ---- МОБИЛЬНАЯ ВЕРСИЯ ---- */
+    @media (max-width: 900px) {
+      .slide-layout {
+        padding: 24px 24px;
+        gap: 24px;
+      }
+
+      .original-block {
+        padding: 20px 24px;
+        border-radius: 14px;
+      }
+
+      .translation-block {
+        padding: 0 24px 24px 24px;
+      }
+
+      .original-lines .line {
+        font-size: 32px;  /* меньше шрифт */
+      }
+
+      .translation-lines .line {
+        font-size: 26px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="frame-wrapper">
@@ -192,6 +192,8 @@
   </div>
 
   <script>
+    /* ===== ТЕКСТЫ ===== */
+
     const BOOK_TEXT_EN = `
 THE HOUND OF THE BASKERVILLES 
 
@@ -423,16 +425,18 @@ The Baskerville family is safe again.
     const maxLines = Math.max(linesEn.length, linesUk.length);
 
     const slideRoot = document.getElementById("slide-root");
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     let currentStartIndex = 0;
     let currentLinesEn = [];
     let wordSpans = [];
     let currentWordIndex = -1;
     let speaking = false;
     let lastBoundaryChar = -1;
-
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     let voicesReady = false;
     let pendingStart = false;
+
+    /* ========= построение страниц ========= */
 
     function tryBuildPage(startIndex, lineCount) {
       const pageEn = linesEn.slice(startIndex, startIndex + lineCount);
@@ -494,19 +498,22 @@ The Baskerville family is safe again.
       layout.appendChild(translationBlock);
       slideRoot.appendChild(layout);
 
-      const fitsOriginal =
-        originalLines.scrollHeight <= originalBlock.clientHeight;
-      const fitsTranslation =
-        translationLines.scrollHeight <= translationBlock.clientHeight;
+      if (!isMobile) {
+        // НА ДЕСКТОПЕ — проверка высоты
+        const fitsOriginal =
+          originalLines.scrollHeight <= originalBlock.clientHeight;
+        const fitsTranslation =
+          translationLines.scrollHeight <= translationBlock.clientHeight;
 
-      if (fitsOriginal && fitsTranslation) {
-        currentLinesEn = pageEn;
-        return true;
+        if (!fitsOriginal || !fitsTranslation) {
+          slideRoot.innerHTML = "";
+          wordSpans = [];
+          return false;
+        }
       }
 
-      slideRoot.innerHTML = "";
-      wordSpans = [];
-      return false;
+      currentLinesEn = pageEn;
+      return true;
     }
 
     function buildNextPage() {
@@ -525,6 +532,7 @@ The Baskerville family is safe again.
       }
 
       if (!used) {
+        // на всякий случай, но на мобилках tryBuildPage почти всегда true
         tryBuildPage(currentStartIndex, 1);
         used = 1;
       }
@@ -532,6 +540,8 @@ The Baskerville family is safe again.
       currentStartIndex += used;
       return true;
     }
+
+    /* ========= TTS ========= */
 
     function updateHighlight() {
       wordSpans.forEach((s) => s.classList.remove("active"));
@@ -618,6 +628,7 @@ The Baskerville family is safe again.
       setupVoices();
 
       if (buildNextPage()) {
+        // на десктопе — автозапуск, на мобилке ждём тап
         if (!isMobile) {
           if (voicesReady) {
             speakCurrentPage();
