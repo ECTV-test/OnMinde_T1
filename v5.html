@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Hound of the Baskervilles – Slide Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --blue-main: #1d4ed8;
+      --blue-light: #dbeafe;
+      --bg: #ffffff;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: var(--font-main);
+    }
+
+    .frame-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .frame {
+      width: 1920px;
+      height: 1080px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+
+    /* масштаб, но базовый кадр всегда 1920×1080 */
+    @media (max-aspect-ratio: 16/9) {
+      .frame {
+        transform: scale(calc(100vh / 1080));
+      }
+    }
+
+    @media (min-aspect-ratio: 16/9) {
+      .frame {
+        transform: scale(calc(100vw / 1920));
+      }
+    }
+
+    .slide-layout {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 90px 120px;
+      gap: 60px;
+    }
+
+    .original-block {
+      flex: 6;
+      background: var(--blue-light);
+      border-radius: 18px;
+      padding: 56px 80px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .translation-block {
+      flex: 4;
+      padding: 0 80px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .original-lines,
+    .translation-lines {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .line {
+      display: block;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      line-height: 1.12;
+      white-space: normal;
+      word-wrap: break-word;
+      width: 100%;
+    }
+
+    .original-lines .line {
+      font-size: 88px;
+      color: var(--blue-main);
+      letter-spacing: 0.04em;
+    }
+
+    .translation-lines .line {
+      font-size: 72px;
+      color: rgba(37, 99, 235, 0.8);
+    }
+
+    .line.empty::before {
+      content: "";
+    }
+
+    .word {
+      position: relative;
+      display: inline-block;
+      padding: 0 0.08em;
+      margin-right: 0.06em;
+      border-radius: 999px;
+      transition: transform 120ms ease-out, box-shadow 160ms ease-out,
+        background 160ms ease-out, color 160ms ease-out;
+    }
+
+    .word.active {
+      background: linear-gradient(120deg, #2563eb, #60a5fa);
+      color: #ffffff;
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.5);
+    }
+
+    .slide-layout.fade-in {
+      animation: fadeIn 500ms ease-out forwards;
+    }
+
+    .slide-layout.fade-out {
+      animation: fadeOut 300ms ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame-wrapper">
+    <div class="frame">
+      <div id="slide-root"></div>
+      <audio id="narration-audio"></audio>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Текст книги ===== */
+
+    const BOOK_TEXT_EN = `
+THE HOUND OF THE BASKERVILLES 
+
+Arthur Conan Doyle 
+ 
+Chapter 1 — A Strange Visitor
+Sherlock Holmes is a famous detective in London.
+One morning, a man comes to see him. His name is Dr. Mortimer.
+He carries a large stick and looks worried.
+Dr. Mortimer tells Holmes and Dr. Watson about a man. He is called Sir Charles Baskerville.
+Sir Charles lived in a big house called Baskerville Hall, in Devon.
+He died suddenly on the moor.
+People say a giant dog killed him.
+Dr. Mortimer says the Baskerville family has a long story. It is a dark story about a dangerous hound.
+Holmes does not believe in ghosts.
+But he listens carefully.
+ 
+Chapter 2 — Sir Henry’s Warning
+The next day Sir Henry Baskerville, the next heir, comes to London.
+A strange thing happens.
+Sir Henry receives a letter.
+It says: “Do not go to the moor.”
+Someone is watching him.
+Someone wants to scare him.
+Holmes follows a man with a black beard in the street.
+But the man escapes.
+Holmes is very interested now.
+ 
+Chapter 3 — Watson Goes to Devon
+Holmes is busy with another case, so he sends Dr. Watson with Sir Henry.
+Their job is to stay at Baskerville Hall and watch carefully.
+The house is big and old.
+The air feels cold.
+The moor outside is wide, empty, and sometimes foggy.
+Watson hears a strange sound at night.
+It is long and sad.
+People say it is the hound.
+ 
+Chapter 4 — The Barrymores’ Secret
+Mr. and Mrs. Barrymore are the servants at the hall.
+Watson thinks they are hiding something.
+One night, he sees Mr. Barrymore with a candle near a window.
+It looks like a signal.
+Watson and Sir Henry follow him.
+They learn the truth:
+The Barrymores are helping Mrs. Barrymore’s brother.
+He is an escaped prisoner hiding on the moor.
+The Barrymores are not dangerous.
+They are only helping family.
+ 
+Chapter 5 — A Strange Man on the Moor
+Watson walks on the moor many times.
+He wants to understand the case.
+He meets Mr. Stapleton and his sister Beryl.
+Stapleton is friendly, but Beryl looks afraid.
+She whispers to Watson:
+“Go back. Go away from the moor.”
+Watson also hears about a tall, thin man living secretly on the moor.
+Who is he?
+Why is he watching everyone?
+ 
+Chapter 6 — The Mystery Grows
+Watson tries to find the secret man.
+He leaves food for the prisoner, but someone else takes it.
+Finally, Watson climbs a hill and sees a small hut.
+Inside the hut he finds blankets, food, and notes.
+Suddenly a voice says:
+“Watson! It is me.”
+It is Sherlock Holmes!
+Holmes has been watching the case secretly.
+ 
+Chapter 7 — Holmes’s Plan
+Holmes explains everything.
+He says a real dog, a huge dog, killed Sir Charles.
+But the dog was trained by someone.
+Holmes thinks the killer is Mr. Stapleton.
+He is not really kind.
+He is dangerous and clever.
+Holmes says Stapleton wants Sir Henry to die next.
+ 
+Chapter 8 — The Hound in the Night
+Holmes and Watson follow Stapleton quietly.
+Stapleton invites Sir Henry to dinner.
+He wants Sir Henry to walk home alone in the dark.
+Holmes and Watson hide on the moor and wait.
+The night is cold.
+The fog is heavy.
+They hear a terrible sound — a loud, deep howl.
+The hound appears.
+Its eyes shine.
+Its body is huge.
+It runs fast toward Sir Henry.
+ 
+Chapter 9 — The Truth Revealed
+Holmes and Watson shoot the dog.
+The hound falls.
+It is only a real dog, but painted with glowing colors to make it look like a monster.
+Sir Henry is safe, but very scared.
+Holmes and Watson run to Stapleton’s house.
+They find glue, paint, and dog food.
+Stapleton has escaped into the deep moor.
+Later, people search for him, but he never returns.
+ 
+Chapter 10 — Back to London
+The case is over.
+Sir Henry goes on a long holiday to rest.
+Holmes and Watson return to London.
+Holmes says:
+“There are no ghosts. Only people who use fear to hide their crimes.”
+The hound mystery is solved.
+The Baskerville family is safe again.
+`.replace(/\r/g, "");
+
+    const BOOK_TEXT_UK = `
+СОБАКА БАСКЕРВІЛІВ 
+
+Артур Конан Дойл 
+ 
+Розділ 1 — Дивний відвідувач
+Шерлок Холмс — відомий детектив у Лондоні.
+Одного ранку до нього приходить чоловік. Його звати доктор Мортімер.
+Він тримає в руках велику палицю й виглядає стурбованим.
+Доктор Мортімер розповідає Холмсу й докторові Вотсону про одного чоловіка. Його звати сер Чарльз Баскервіль.
+Сер Чарльз жив у великому будинку Баскервіль-холл у Девоні.
+Він раптово помер на болотистій пустці.
+Люди кажуть, що його вбила велетенська собака.
+Доктор Мортімер каже, що в родини Баскервілів довга історія. Це похмура історія про небезпечного пса.
+Холмс не вірить у привидів.
+Але він уважно слухає.
+ 
+Розділ 2 — Попередження сера Генрі
+Наступного дня до Лондона приїжджає сер Генрі Баскервіль, наступний спадкоємець.
+Трапляється дивна річ.
+Сер Генрі отримує листа.
+У ньому написано: «Не їдьте на пустище».
+Хтось слідкує за ним.
+Хтось хоче його налякати.
+Холмс іде слідом за чоловіком із чорною бородою на вулиці.
+Але той чоловік тікає.
+Тепер Холмс дуже зацікавлений.
+ 
+Розділ 3 — Вотсон їде до Девону
+Холмс зайнятий іншою справою, тому відправляє доктора Вотсона разом із сером Генрі.
+Їхнє завдання — жити в Баскервіль-холлі й уважно спостерігати.
+Будинок великий і старий.
+У повітрі відчувається холод.
+Пустище зовні широке, порожнє й інколи туманне.
+Уночі Вотсон чує дивний звук.
+Він довгий і сумний.
+Люди кажуть, що це пес.
+ 
+Розділ 4 — Таємниця Барріморів
+Містер і місіс Баррімор — слуги в маєтку.
+Вотсон думає, що вони щось приховують.
+Однієї ночі він бачить містера Баррімора зі свічкою біля вікна.
+Це схоже на сигнал.
+Вотсон і сер Генрі йдуть за ним.
+Вони дізнаються правду:
+Баррімори допомагають братові місіс Баррімор.
+Він утікач-в'язень, який ховається на пустищі.
+Баррімори не небезпечні.
+Вони лише допомагають родичеві.
+ 
+Розділ 5 — Дивний чоловік на пустищі
+Вотсон багато разів гуляє пустищем.
+Він хоче розібратися в справі.
+Він знайомиться з містером Степлтоном та його сестрою Беріл.
+Степлтон привітний, але Беріл виглядає наляканою.
+Вона шепоче Вотсону:
+«Повертайтеся. Ідіть геть із пустища».
+Вотсон також чує про високого худого чоловіка, який таємно живе на пустищі.
+Хто він?
+Чому він за всіма стежить?
+ 
+Розділ 6 — Таємниця зростає
+Вотсон намагається знайти таємничого чоловіка.
+Він залишає їжу для в'язня, але її забирає хтось інший.
+Нарешті Вотсон піднімається на пагорб і бачить маленьку хатину.
+Усередині він знаходить ковдри, їжу й записки.
+Раптом голос каже:
+«Вотсоне! Це я».
+Це Шерлок Холмс!
+Холмс таємно стежив за справою.
+ 
+Розділ 7 — План Холмса
+Холмс усе пояснює.
+Він каже, що сера Чарльза вбила справжня собака, величезна собака.
+Але цю собаку хтось натренував.
+Холмс вважає, що вбивця — містер Степлтон.
+Насправді він не добрий.
+Він небезпечний і хитрий.
+Холмс каже, що Степлтон хоче, аби наступним загинув сер Генрі.
+ 
+Розділ 8 — Собака вночі
+Холмс і Вотсон крадькома стежать за Степлтоном.
+Степлтон запрошує сера Генрі на вечерю.
+Він хоче, щоб сер Генрі повертався додому сам у темряві.
+Холмс і Вотсон ховаються на пустищі й чекають.
+Ніч холодна.
+Туман густий.
+Вони чують жахливий звук — голосне, глибоке виття.
+З’являється пес.
+Його очі світяться.
+Його тіло величезне.
+Він швидко біжить до сера Генрі.
+ 
+Розділ 9 — Розкриття правди
+Холмс і Вотсон стріляють у собаку.
+Пес падає.
+Це просто справжній пес, але пофарбований світними фарбами, щоб виглядати монстром.
+Сер Генрі живий, але дуже наляканий.
+Холмс і Вотсон біжать до будинку Степлтона.
+Вони знаходять клей, фарбу й собачий корм.
+Степлтон утік у глибину пустища.
+Пізніше люди шукають його, але він так і не повертається.
+ 
+Розділ 10 — Повернення до Лондона
+Справу завершено.
+Сер Генрі їде у тривалу відпустку, щоб відпочити.
+Холмс і Вотсон повертаються до Лондона.
+Холмс каже:
+«Привидів не існує. Є лише люди, які використовують страх, щоб приховати свої злочини».
+Таємницю пса розкрито.
+Родина Баскервілів знову в безпеці.
+`.replace(/\r/g, "");
+
+    const linesEn = BOOK_TEXT_EN.split("\n");
+    const linesUk = BOOK_TEXT_UK.split("\n");
+    const maxLines = Math.max(linesEn.length, linesUk.length);
+
+    const slideRoot = document.getElementById("slide-root");
+    let currentStartIndex = 0;
+    let currentLinesEn = [];
+    let wordSpans = [];
+    let currentWordIndex = -1;
+    let speaking = false;
+    let lastBoundaryChar = -1;
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let voicesReady = false;
+    let pendingStart = false;
+
+    /* ===== построение страниц ===== */
+
+    function tryBuildPage(startIndex, lineCount) {
+      const pageEn = linesEn.slice(startIndex, startIndex + lineCount);
+      const pageUk = linesUk.slice(startIndex, startIndex + lineCount);
+
+      slideRoot.innerHTML = "";
+      wordSpans = [];
+      currentWordIndex = -1;
+      lastBoundaryChar = -1;
+
+      const layout = document.createElement("div");
+      layout.className = "slide-layout fade-in";
+
+      // ORIGINAL
+      const originalBlock = document.createElement("div");
+      originalBlock.className = "original-block";
+      const originalLines = document.createElement("div");
+      originalLines.className = "original-lines";
+
+      pageEn.forEach((rawLine) => {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "line";
+        const line = rawLine ?? "";
+        if (line.trim() === "") {
+          lineDiv.classList.add("empty");
+          originalLines.appendChild(lineDiv);
+          return;
+        }
+        const words = line.split(/\s+/);
+        words.forEach((w, idx) => {
+          const span = document.createElement("span");
+          span.className = "word";
+          span.textContent = w + (idx < words.length - 1 ? " " : "");
+          lineDiv.appendChild(span);
+          wordSpans.push(span);
+        });
+        originalLines.appendChild(lineDiv);
+      });
+
+      // TRANSLATION
+      const translationBlock = document.createElement("div");
+      translationBlock.className = "translation-block";
+      const translationLines = document.createElement("div");
+      translationLines.className = "translation-lines";
+
+      pageUk.forEach((rawLine) => {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "line";
+        const line = rawLine ?? "";
+        if (line.trim() === "") {
+          lineDiv.classList.add("empty");
+        } else {
+          lineDiv.textContent = line;
+        }
+        translationLines.appendChild(lineDiv);
+      });
+
+      originalBlock.appendChild(originalLines);
+      translationBlock.appendChild(translationLines);
+      layout.appendChild(originalBlock);
+      layout.appendChild(translationBlock);
+      slideRoot.appendChild(layout);
+
+      const fitsOriginal =
+        originalLines.scrollHeight <= originalBlock.clientHeight;
+      const fitsTranslation =
+        translationLines.scrollHeight <= translationBlock.clientHeight;
+
+      if (fitsOriginal && fitsTranslation) {
+        currentLinesEn = pageEn;
+        return true;
+      }
+
+      slideRoot.innerHTML = "";
+      wordSpans = [];
+      return false;
+    }
+
+    function buildNextPage() {
+      if (currentStartIndex >= maxLines) {
+        slideRoot.innerHTML = "";
+        return false;
+      }
+
+      const maxPerPage = 4;
+      let used = 0;
+      for (let n = maxPerPage; n >= 1; n--) {
+        if (tryBuildPage(currentStartIndex, n)) {
+          used = n;
+          break;
+        }
+      }
+
+      if (!used) {
+        tryBuildPage(currentStartIndex, 1);
+        used = 1;
+      }
+
+      currentStartIndex += used;
+      return true;
+    }
+
+    /* ===== TTS ===== */
+
+    function updateHighlight() {
+      wordSpans.forEach((s) => s.classList.remove("active"));
+      if (currentWordIndex >= 0 && currentWordIndex < wordSpans.length) {
+        wordSpans[currentWordIndex].classList.add("active");
+      }
+    }
+
+    function pickEnglishVoice() {
+      if (!("speechSynthesis" in window)) return null;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      const enVoices = voices.filter((v) =>
+        v.lang && v.lang.toLowerCase().startsWith("en")
+      );
+      const prefer = ["en-GB", "en-US"];
+      for (const tag of prefer) {
+        const v = enVoices.find((voice) =>
+          voice.lang.toLowerCase().startsWith(tag.toLowerCase())
+        );
+        if (v) return v;
+      }
+      return enVoices[0] || voices[0];
+    }
+
+    function speakCurrentPage() {
+      if (!("speechSynthesis" in window)) {
+        console.warn("Web Speech API not supported");
+        return;
+      }
+
+      const text = currentLinesEn.join("\n");
+      if (!text.trim()) return;
+
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = "en-US";
+      const voice = pickEnglishVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = 0.9;
+
+      currentWordIndex = -1;
+      lastBoundaryChar = -1;
+      speaking = true;
+
+      window.speechSynthesis.cancel();
+
+      utt.onboundary = (event) => {
+        if (event.charIndex > lastBoundaryChar) {
+          lastBoundaryChar = event.charIndex;
+          if (currentWordIndex < wordSpans.length - 1) {
+            currentWordIndex++;
+            updateHighlight();
+          }
+        }
+      };
+
+      utt.onend = () => {
+        speaking = false;
+        wordSpans.forEach((s) => s.classList.remove("active"));
+        if (buildNextPage()) {
+          setTimeout(() => speakCurrentPage(), 400);
+        }
+      };
+
+      window.speechSynthesis.speak(utt);
+    }
+
+    /* ===== инициализация голосов (важно для iOS) ===== */
+
+    function setupVoices() {
+      if (!("speechSynthesis" in window)) return;
+      const vs = window.speechSynthesis.getVoices();
+      if (vs && vs.length) {
+        voicesReady = true;
+      }
+      window.speechSynthesis.onvoiceschanged = () => {
+        voicesReady = true;
+        if (pendingStart) {
+          pendingStart = false;
+          speakCurrentPage();
+        }
+      };
+    }
+
+    /* ===== старт ===== */
+
+    window.addEventListener("load", () => {
+      setupVoices();
+
+      if (buildNextPage()) {
+        if (!isMobile) {
+          // на десктопе пытаемся сразу говорить
+          if (voicesReady) {
+            speakCurrentPage();
+          } else {
+            pendingStart = true;
+          }
+        }
+        // на мобильном ждём тап
+      }
+    });
+
+    // любой тап по экрану — start / restart
+    document.addEventListener("click", () => {
+      if (!("speechSynthesis" in window)) return;
+      if (!voicesReady) {
+        pendingStart = true;
+        window.speechSynthesis.getVoices();
+        return;
+      }
+      if (!speaking) {
+        window.speechSynthesis.cancel();
+        speakCurrentPage();
+      }
+    });
+  </script>
+</body>
+</html>
