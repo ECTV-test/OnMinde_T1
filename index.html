@@ -37,6 +37,9 @@
       justify-content: center;
     }
 
+    /* ГЛАВНОЕ ИЗМЕНЕНИЕ:
+       базовый кадр 1920×1080,
+       масштаб = min(по ширине, по высоте) => ничего не режется */
     .frame {
       width: 1920px;
       height: 1080px;
@@ -44,19 +47,7 @@
       position: relative;
       overflow: hidden;
       transform-origin: center center;
-    }
-
-    /* масштаб, но базовый кадр всегда 1920×1080 */
-    @media (max-aspect-ratio: 16/9) {
-      .frame {
-        transform: scale(calc(100vh / 1080));
-      }
-    }
-
-    @media (min-aspect-ratio: 16/9) {
-      .frame {
-        transform: scale(calc(100vw / 1920));
-      }
+      transform: scale(calc(min(100vw / 1920, 100vh / 1080)));
     }
 
     .slide-layout {
@@ -178,7 +169,7 @@
   </div>
 
   <script>
-    /* ===== Текст книги ===== */
+    /* ===== текст (тот же, что и раньше) ===== */
 
     const BOOK_TEXT_EN = `
 THE HOUND OF THE BASKERVILLES 
@@ -422,8 +413,6 @@ The Baskerville family is safe again.
     let voicesReady = false;
     let pendingStart = false;
 
-    /* ===== построение страниц ===== */
-
     function tryBuildPage(startIndex, lineCount) {
       const pageEn = linesEn.slice(startIndex, startIndex + lineCount);
       const pageUk = linesUk.slice(startIndex, startIndex + lineCount);
@@ -436,7 +425,6 @@ The Baskerville family is safe again.
       const layout = document.createElement("div");
       layout.className = "slide-layout fade-in";
 
-      // ORIGINAL
       const originalBlock = document.createElement("div");
       originalBlock.className = "original-block";
       const originalLines = document.createElement("div");
@@ -462,7 +450,6 @@ The Baskerville family is safe again.
         originalLines.appendChild(lineDiv);
       });
 
-      // TRANSLATION
       const translationBlock = document.createElement("div");
       translationBlock.className = "translation-block";
       const translationLines = document.createElement("div");
@@ -524,8 +511,6 @@ The Baskerville family is safe again.
       currentStartIndex += used;
       return true;
     }
-
-    /* ===== TTS ===== */
 
     function updateHighlight() {
       wordSpans.forEach((s) => s.classList.remove("active"));
@@ -593,8 +578,6 @@ The Baskerville family is safe again.
       window.speechSynthesis.speak(utt);
     }
 
-    /* ===== инициализация голосов (важно для iOS) ===== */
-
     function setupVoices() {
       if (!("speechSynthesis" in window)) return;
       const vs = window.speechSynthesis.getVoices();
@@ -610,25 +593,20 @@ The Baskerville family is safe again.
       };
     }
 
-    /* ===== старт ===== */
-
     window.addEventListener("load", () => {
       setupVoices();
 
       if (buildNextPage()) {
         if (!isMobile) {
-          // на десктопе пытаемся сразу говорить
           if (voicesReady) {
             speakCurrentPage();
           } else {
             pendingStart = true;
           }
         }
-        // на мобильном ждём тап
       }
     });
 
-    // любой тап по экрану — start / restart
     document.addEventListener("click", () => {
       if (!("speechSynthesis" in window)) return;
       if (!voicesReady) {
