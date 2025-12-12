@@ -522,7 +522,7 @@ The Baskerville family is safe again.
         return false;
       }
 
-      const maxPerPage = 4;
+      const maxPerPage = isMobile ? 2 : 4; // на телефоне максимум 2 строки за раз
       let used = 0;
       for (let n = maxPerPage; n >= 1; n--) {
         if (tryBuildPage(currentStartIndex, n)) {
