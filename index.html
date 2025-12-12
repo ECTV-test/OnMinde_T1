@@ -37,17 +37,16 @@
       justify-content: center;
     }
 
-    /* ГЛАВНОЕ ИЗМЕНЕНИЕ:
-       базовый кадр 1920×1080,
-       масштаб = min(по ширине, по высоте) => ничего не режется */
+    /* ВАЖНО: без transform, просто блок 16:9, вписанный в экран */
     .frame {
-      width: 1920px;
-      height: 1080px;
       background: var(--bg);
       position: relative;
       overflow: hidden;
-      transform-origin: center center;
-      transform: scale(calc(min(100vw / 1920, 100vh / 1080)));
+      aspect-ratio: 16 / 9;
+      width: min(100vw, 1920px);
+      height: auto;
+      max-height: min(100vh, 1080px);
+      border-radius: 0; /* можно убрать, если нужно строго как для видео */
     }
 
     .slide-layout {
@@ -169,8 +168,6 @@
   </div>
 
   <script>
-    /* ===== текст (тот же, что и раньше) ===== */
-
     const BOOK_TEXT_EN = `
 THE HOUND OF THE BASKERVILLES 
 
